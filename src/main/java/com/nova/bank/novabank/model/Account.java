@@ -4,15 +4,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
+import lombok.Data;
+import org.springframework.data.annotation.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 @Validated
 @Document(collection = "account")
+@Data
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,39 +30,14 @@ public class Account {
     private String customerId;
 
     @CreatedDate
-    private LocalDateTime createdDate;
+    private Instant createdDate;
 
     @LastModifiedDate
-    private LocalDateTime lastModifiedDate;
-    public Long getId() {
-        return id;
-    }
+    private Instant lastModifiedDate;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @CreatedBy
+    private String createdBy;
 
-    public String getAccountNumber() {
-        return accountNumber;
-    }
-
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
-    }
-
-    public Double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(Double balance) {
-        this.balance = balance;
-    }
-
-    public String  getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
+    @LastModifiedBy
+    private String lastModifiedBy;
 }

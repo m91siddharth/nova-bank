@@ -1,11 +1,9 @@
 package com.nova.bank.novabank.handler;
 
-import com.nova.bank.novabank.exception.CustomerValidationException;
 import com.nova.bank.novabank.model.Customer;
 import com.nova.bank.novabank.repository.CustomerRepository;
 import jakarta.validation.Valid;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -16,9 +14,8 @@ import reactor.core.publisher.Mono;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j // Lombok annotation to inject the SLF4J logger
 public class CustomerHandler {
-    private static final Logger log = LogManager.getLogger(CustomerHandler.class);
-
 
     private final CustomerRepository customerRepository;
     private PasswordEncoder passwordEncoder;
@@ -31,28 +28,39 @@ public class CustomerHandler {
         this.validator = validator;
     }
 
-
     public Mono<ServerResponse> registerCustomer(@Valid ServerRequest request) {
-        log.info("Registering customer");
+        log.info("Registering a new customer"); // Example of logging
+
         return request.bodyToMono(Customer.class)
                 .flatMap(customer -> {
                     var violations = validator.validate(customer);
                     if (!violations.isEmpty()) {
-                        String message = violations.stream()
+                        String errorMessage = violations.stream()
                                 .map(v -> v.getPropertyPath() + ": " + v.getMessage())
                                 .collect(Collectors.joining(", "));
-                        throw new CustomerValidationException("Validation failed", message);
+
+                        log.warn("Validation failed: {}", errorMessage); // Example of warning logging
+                        return ServerResponse.badRequest().bodyValue("Validation failed: " + errorMessage);
                     }
 
+                    log.debug("Hashing the customer's password"); // Debug-level logging
                     customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+
                     return customerRepository.save(customer)
-                            .flatMap(saved -> ServerResponse.ok().bodyValue(saved));
+                            .flatMap(saved -> {
+                                log.info("Successfully registered customer with ID: {}", saved.getId());
+                                return ServerResponse.ok().bodyValue(saved);
+                            });
                 });
     }
 
     public Mono<ServerResponse> getAllCustomers(ServerRequest request) {
+        log.info("Fetching all customers");
         return customerRepository.findAll()
                 .collectList()
-                .flatMap(customers -> ServerResponse.ok().bodyValue(customers));
+                .flatMap(customers -> {
+                    log.debug("Found {} customers in the database", customers.size());
+                    return ServerResponse.ok().bodyValue(customers);
+                });
     }
 }
