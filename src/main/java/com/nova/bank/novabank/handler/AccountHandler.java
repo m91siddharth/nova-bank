@@ -9,7 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Component
 @Slf4j
@@ -36,5 +39,15 @@ public class AccountHandler {
         return accountRepository.findById(accountId)
                 .flatMap(account -> ServerResponse.ok().bodyValue(account))
                 .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Flux<Account> getAllAccounts() {
+        log.info("Getting all accounts ");
+        return accountRepository.findAll();
+    }
+
+    public void updateAccounts(List<Account> updatedAccounts) {
+        log.info("Updating accounts");
+        accountRepository.saveAll(updatedAccounts);
     }
 }

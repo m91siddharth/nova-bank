@@ -30,14 +30,19 @@ public class Account {
     private String customerId;
 
     @CreatedDate
-    private Instant createdDate;
+    private LocalDateTime createdDate;
 
     @LastModifiedDate
-    private Instant lastModifiedDate;
+    private LocalDateTime lastModifiedDate;
 
     @CreatedBy
     private String createdBy;
 
     @LastModifiedBy
     private String lastModifiedBy;
+
+    @NotEmpty
+    @Positive
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private LocalDateTime lastUpdated;
 }
